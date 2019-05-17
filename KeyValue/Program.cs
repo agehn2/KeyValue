@@ -2,76 +2,96 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace KeyValue_Store
+namespace KVStore
 {
-    public struct KeyValue
+   
+    //Create a struct named `KeyValue` which contains one `string` "key" and one `object` "value" as `public readonly` instance fields
+    struct KeyValue<T>
     {
+        
         public readonly string key;
-        public readonly object value;
+        public readonly T value;
+        
 
-        public KeyValue(string key, object value)
+
+
+        //Implement a constructor for `KeyValue` which sets the instance fields
+        public KeyValue(string key, T value)
         {
             this.key = key;
             this.value = value;
         }
-
-
     }
-    public class MyDictionary
-    {
-        private KeyValue[] items = new KeyValue[0];
-        private int count = 0;
 
-        public object this[string key]
+    //Create a class named `MyDictionary` which contains one array of KeyValue structs and one `int` to keep track of the number of stored values as private instance fields.You may choose a reasonable fixed size for the array. 
+    class MyDictionary<T>
+    {
+        List<KeyValue<T>> kvs = new List<KeyValue<T>>();
+        int storedValues = 0;
+
+        //Implement an indexer which takes a string (key) and returns an object (value).
+        public T this[string searchKey]
         {
-            get
-            {
-                for (int i = 0; i < items.Length; i++)
-                {
-                    if (items[i].key == key)
-                    {
-                        return items[i].value;
-                    }
-                }
-                throw new KeyNotFoundException();
-            }
+            //The `set` property should search the array for the given key and replace the KeyValue with a `new KeyValue(...)` if it exists.If the key does not exist, it should be added as a `new KeyValue(...)`.
             set
             {
-                bool hasValue = false;
-                for (int i = 0; i < items.Length && !hasValue; i++)
+                bool found = false;
+
+                for (int i = 0; i < storedValues && !found; ++i)
                 {
-                    if (items[i].key == key)
+                    if (kvs[i].key == searchKey)
                     {
-                        hasValue = true;
-                        items[i] = new KeyValue(key, value);
+                        found = true;
+                        kvs[i] = new KeyValue<T>(searchKey, value);
                     }
                 }
-                if (!hasValue)
+
+                //if (!found)
+                //{
+                //    kvs[storedValues++] = new KeyValue<T>(searchKey, value);
+
+                //    if (storedValues >= kvs.Count)
+                //    {
+                //        kv(ref kvs, kvs.Count << 1);
+                //    }
+                //}
+            }
+
+
+            //The `get` property should search the array for the given key and return the associated value if it exists.If the key does not exist, the property should throw a KeyNotFoundException.
+            get
+            {
+                for (int i = 0; i < storedValues; ++i)
                 {
-                    Array.Resize(ref items, items.Length + 1);
-                    items[items.Length - 1] = (new KeyValue(key, value));
-                    count++;
+                    if (kvs[i].key == searchKey)
+                        return kvs[i].value;
                 }
+
+                throw new KeyNotFoundException($"Didn't find \"{searchKey}\" in MyDictionary");
             }
         }
-        public class Program
+    }
+
+
+    public class Program
+    {
+        //Your code should compile against the following `Main` method and print a KeyNotFoundException followed by the line "42, 17" to the command line.
+        static void Main()
         {
-            public static void Main(string[] args)
+            var d = new MyDictionary<int>();
+            try
             {
-                var d = new MyDictionary();
-                try
-                {
-                    Console.WriteLine(d["Cats"]);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-                d["Cats"] = 42;
-                d["Dogs"] = 17;
-                Console.WriteLine($"{(int)d["Cats"]}, {(int)d["Dogs"]}");
+                Console.WriteLine(d["Cats"]);
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            d["Cats"] = 42;
+            d["Dogs"] = 17;
+            Console.WriteLine($"{(int)d["Cats"]}, {(int)d["Dogs"]}");
         }
     }
 }
